@@ -1,4 +1,4 @@
-module mongodb
+module github.com/neondodongo/mongodb-go
 
 go 1.16
 

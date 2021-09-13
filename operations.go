@@ -16,12 +16,12 @@ import (
 //
 // A value of -1 will be returned if any error occurs during this operation.
 func (op Operator) Count(collection string, filter interface{}, opts ...*options.CountOptions) (int64, error) {
-	if collection = strings.TrimSpace(collection); collection == "" {
-		return -1, ErrEmptyCollectionName
-	}
-
 	if filter == nil {
 		return -1, ErrNilFilter
+	}
+
+	if collection = strings.TrimSpace(collection); collection == "" {
+		collection = op.config.DefaultCollection
 	}
 
 	c, err := op.getCollection(collection)
@@ -47,6 +47,10 @@ func (op Operator) Count(collection string, filter interface{}, opts ...*options
 func (op *Operator) DeleteMany(collection string, filter interface{}, opts ...*options.DeleteOptions) (int64, error) {
 	if filter == nil {
 		return -1, ErrNilFilter
+	}
+
+	if collection = strings.TrimSpace(collection); collection == "" {
+		collection = op.config.DefaultCollection
 	}
 
 	col, err := op.getCollection(collection)
@@ -76,6 +80,10 @@ func (op *Operator) DeleteOne(collection string, filter, target interface{}, opt
 
 	if target == nil {
 		return ErrNilTarget
+	}
+
+	if collection = strings.TrimSpace(collection); collection == "" {
+		collection = op.config.DefaultCollection
 	}
 
 	col, err := op.getCollection(collection)
@@ -111,6 +119,10 @@ func (op Operator) FindMany(collection string, filter, target interface{}, opts 
 		return ErrNilTarget
 	}
 
+	if collection = strings.TrimSpace(collection); collection == "" {
+		collection = op.config.DefaultCollection
+	}
+
 	c, err := op.getCollection(collection)
 	if err != nil {
 		return fmt.Errorf("%s, %w", ErrFindMany.Error(), err)
@@ -142,6 +154,10 @@ func (op Operator) InsertMany(collection string, payload []interface{}, opts ...
 		return nil, fmt.Errorf("provided payload slice cannot be empty")
 	}
 
+	if collection = strings.TrimSpace(collection); collection == "" {
+		collection = op.config.DefaultCollection
+	}
+
 	c, err := op.getCollection(collection)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get collection '%s'; %w", collection, err)
@@ -162,6 +178,10 @@ func (op Operator) InsertMany(collection string, payload []interface{}, opts ...
 func (op Operator) InsertOne(collection string, payload interface{}, opts ...*options.InsertOneOptions) error {
 	if payload == nil {
 		return ErrNilPayload
+	}
+
+	if collection = strings.TrimSpace(collection); collection == "" {
+		collection = op.config.DefaultCollection
 	}
 
 	c, err := op.getCollection(collection)
@@ -193,6 +213,10 @@ func (op *Operator) UpdateMany(collection string, filter, payload interface{}, o
 		return -1, ErrNilPayload
 	}
 
+	if collection = strings.TrimSpace(collection); collection == "" {
+		collection = op.config.DefaultCollection
+	}
+
 	c, err := op.getCollection(collection)
 	if err != nil {
 		return -1, fmt.Errorf("%s, %w", ErrUpdateMany.Error(), err)
@@ -219,6 +243,10 @@ func (op Operator) UpdateOne(collection string, filter, payload interface{}, opt
 
 	if payload == nil {
 		return ErrNilPayload
+	}
+
+	if collection = strings.TrimSpace(collection); collection == "" {
+		collection = op.config.DefaultCollection
 	}
 
 	c, err := op.getCollection(collection)

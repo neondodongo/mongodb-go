@@ -13,10 +13,8 @@ const (
 	_defaultTimeoutMS = 30000
 )
 
-// Controller acts as a wrapper of the MongoDB driver exposing the MongoDB operator functionality
+// Controller acts as a wrapper of the MongoDB driver exposing the MongoDB operator functionality.
 type Controller interface {
-	// Mongo Operations
-
 	Count(collection string, filter interface{}, opts ...*options.CountOptions) (int64, error)
 	DeleteMany(collection string, filter interface{}, opts ...*options.DeleteOptions) (int64, error)
 	DeleteOne(collection string, filter, target interface{}, opts ...*options.FindOneAndDeleteOptions) error
@@ -26,18 +24,10 @@ type Controller interface {
 	InsertOne(collection string, payload interface{}, opts ...*options.InsertOneOptions) error
 	UpdateMany(collection string, filter, payload interface{}, opts ...*options.UpdateOptions) (int64, error)
 	UpdateOne(collection string, filter, payload interface{}, opts ...*options.FindOneAndUpdateOptions) error
-
-	// Network Operations
-
 	Ping() error
-
-	// Getters
-
-	Database() string
-	DefaultCollection() string
 }
 
-// Operator implements the Controller interface to perform MongoDB operations
+// Operator implements the Controller interface to perform MongoDB operations.
 type Operator struct {
 	client *mongo.Client
 	config Config
@@ -46,34 +36,41 @@ type Operator struct {
 // Config holds the connection info required to interface with MongoDB.
 type Config struct {
 	// Database represents the Mongo database to connect to; required.
-	Database string `mapstructure:"database"`
+	Database string `json:"database"`
 
 	// DefaultCollection represents a default collection to perform operations with.
-	DefaultCollection string `mapstructure:"defaultCollection"`
+	DefaultCollection string `json:"default_collection"`
 
 	// Password represents the database user's password.
-	Password string `mapstructure:"password"`
+	Password string `json:"password"`
 
 	// TimeoutMS represents a contextual timeout for operations in milliseconds.
-	TimeoutMS int64 `mapstructure:"timeoutMS"`
+	TimeoutMS int64 `json:"timeout_ms"`
 
 	// URI represents the database URI used to establish a connection.
-	URI string `mapstructure:"uri"`
+	URI string `json:"uri"`
 
 	// Username represents the database username.
-	Username string `mapstructure:"username"`
+	Username string `json:"username"`
 }
 
-// New creates an instance of a MongoDB Connection with the provided connection information
-func New(c Config) (Operator, error) {
+// New creates an instance of a MongoDB Connection with the provided connection information.
+func New(c Config) (*Operator, error) {
 	// TODO: implement a config sanitizer/validator
 	if c.URI == "" {
-		return Operator{}, ErrEmptyConnURI
+		return nil, ErrEmptyConnURI
 	}
 
-	client, err := mongo.NewClient(options.Client().ApplyURI(c.URI))
+	// TODO: Configure additional auth mechanisms; current default is SCRAM
+	client, err := mongo.NewClient(
+		options.Client().ApplyURI(c.URI),
+		options.Client().SetAuth(options.Credential{
+			Username: c.Username,
+			Password: c.Password,
+		}),
+	)
 	if err != nil {
-		return Operator{}, fmt.Errorf("%s, %w", ErrInitClient.Error(), err)
+		return nil, fmt.Errorf("%s, %w", ErrInitClient.Error(), err)
 	}
 
 	if c.TimeoutMS <= 0 {
@@ -84,10 +81,10 @@ func New(c Config) (Operator, error) {
 	defer done()
 
 	if err := client.Connect(ctx); err != nil {
-		return Operator{}, fmt.Errorf("%s, %w", ErrFailedToConnect.Error(), err)
+		return nil, fmt.Errorf("%s, %w", ErrFailedToConnect.Error(), err)
 	}
 
-	return Operator{
+	return &Operator{
 		client: client,
 		config: c,
 	}, nil
