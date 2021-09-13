@@ -89,13 +89,3 @@ func New(c Config) (*Operator, error) {
 		config: c,
 	}, nil
 }
-
-// Database is a getter for the database value set in the Operator's config
-func (op *Operator) Database() string {
-	return op.config.Database
-}
-
-// DefaultCollection is a getter for the default collection value set in the Operator's config
-func (op *Operator) DefaultCollection() string {
-	return op.config.DefaultCollection
-}

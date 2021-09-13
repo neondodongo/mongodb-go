@@ -144,6 +144,40 @@ func (op Operator) FindMany(collection string, filter, target interface{}, opts 
 	return nil
 }
 
+// FindOne will return a single document from the provided collection determined by the bson filter.
+//
+// The target must be a non-nil pointer to a slice of desired type.
+func (op Operator) FindOne(collection string, filter, target interface{}, opts ...*options.FindOneOptions) error {
+	if filter == nil {
+		return ErrNilFilter
+	}
+
+	if target == nil {
+		return ErrNilTarget
+	}
+
+	if collection = strings.TrimSpace(collection); collection == "" {
+		collection = op.config.DefaultCollection
+	}
+
+	c, err := op.getCollection(collection)
+	if err != nil {
+		return fmt.Errorf("%s, %w", ErrFindMany.Error(), err)
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(op.config.TimeoutMS)*time.Nanosecond)
+
+	defer cancel()
+
+	res := c.FindOne(ctx, filter, opts...)
+
+	if err := res.Decode(target); err != nil {
+		return fmt.Errorf("%s, failed to decode result to target; %w", ErrFindOne.Error(), err)
+	}
+
+	return nil
+}
+
 // InsertMany will insert multiple documents into the provided collection.
 func (op Operator) InsertMany(collection string, payload []interface{}, opts ...*options.InsertManyOptions) ([]interface{}, error) {
 	if payload == nil {
