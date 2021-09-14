@@ -15,7 +15,7 @@ import (
 // Count will return a count of the total number documents in the provided collection determinted by the bson filter.
 //
 // A value of -1 will be returned if any error occurs during this operation.
-func (op Operator) Count(collection string, filter interface{}, opts ...*options.CountOptions) (int64, error) {
+func (op *Operator) Count(collection string, filter interface{}, opts ...*options.CountOptions) (int64, error) {
 	if filter == nil {
 		return -1, ErrNilFilter
 	}
@@ -98,7 +98,7 @@ func (op *Operator) DeleteOne(collection string, filter, target interface{}, opt
 // FindMany will return a slice of documents from the provided collection determined by the bson filter.
 //
 // The target must be a non-nil pointer to a slice of desired type.
-func (op Operator) FindMany(collection string, filter, target interface{}, opts ...*options.FindOptions) error {
+func (op *Operator) FindMany(collection string, filter, target interface{}, opts ...*options.FindOptions) error {
 	if filter == nil {
 		return ErrNilFilter
 	}
@@ -131,7 +131,7 @@ func (op Operator) FindMany(collection string, filter, target interface{}, opts 
 // FindOne will return a single document from the provided collection determined by the bson filter.
 //
 // The target must be a non-nil pointer to a slice of desired type.
-func (op Operator) FindOne(collection string, filter, target interface{}, opts ...*options.FindOneOptions) error {
+func (op *Operator) FindOne(collection string, filter, target interface{}, opts ...*options.FindOneOptions) error {
 	if filter == nil {
 		return ErrNilFilter
 	}
@@ -159,7 +159,7 @@ func (op Operator) FindOne(collection string, filter, target interface{}, opts .
 }
 
 // InsertMany will insert multiple documents into the provided collection.
-func (op Operator) InsertMany(collection string, payload []interface{}, opts ...*options.InsertManyOptions) ([]interface{}, error) {
+func (op *Operator) InsertMany(collection string, payload []interface{}, opts ...*options.InsertManyOptions) ([]interface{}, error) {
 	if payload == nil {
 		return nil, ErrNilPayload
 	}
@@ -185,7 +185,7 @@ func (op Operator) InsertMany(collection string, payload []interface{}, opts ...
 }
 
 // InsertOne will insert a single payload into the provided collection.
-func (op Operator) InsertOne(collection string, payload interface{}, opts ...*options.InsertOneOptions) error {
+func (op *Operator) InsertOne(collection string, payload interface{}, opts ...*options.InsertOneOptions) error {
 	if payload == nil {
 		return ErrNilPayload
 	}
@@ -238,7 +238,7 @@ func (op *Operator) UpdateMany(collection string, filter, payload interface{}, o
 }
 
 // UpdateOne will update a single document in the provided collection using the update parameters defined in the payload.
-func (op Operator) UpdateOne(collection string, filter, payload interface{}, opts ...*options.FindOneAndUpdateOptions) error {
+func (op *Operator) UpdateOne(collection string, filter, payload interface{}, opts ...*options.FindOneAndUpdateOptions) error {
 	if filter == nil {
 		return ErrNilFilter
 	}
@@ -264,7 +264,7 @@ func (op Operator) UpdateOne(collection string, filter, payload interface{}, opt
 	return nil
 }
 
-func (op Operator) getCollection(collection string) (*mongo.Collection, error) {
+func (op *Operator) getCollection(collection string) (*mongo.Collection, error) {
 	if strings.TrimSpace(collection) == "" {
 		return nil, ErrEmptyCollectionName
 	}
