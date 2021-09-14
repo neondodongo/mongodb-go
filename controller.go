@@ -9,10 +9,6 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-const (
-	_defaultTimeoutMS = 30000
-)
-
 // Controller acts as a wrapper of the MongoDB driver exposing the MongoDB operator functionality.
 type Controller interface {
 	Count(collection string, filter interface{}, opts ...*options.CountOptions) (int64, error)
@@ -33,32 +29,10 @@ type Operator struct {
 	config Config
 }
 
-// Config holds the connection info required to interface with MongoDB.
-type Config struct {
-	// Database represents the Mongo database to connect to; required.
-	Database string `json:"database"`
-
-	// DefaultCollection represents a default collection to perform operations with.
-	DefaultCollection string `json:"default_collection"`
-
-	// Password represents the database user's password.
-	Password string `json:"password"`
-
-	// TimeoutMS represents a contextual timeout for operations in milliseconds.
-	TimeoutMS int64 `json:"timeout_ms"`
-
-	// URI represents the database URI used to establish a connection.
-	URI string `json:"uri"`
-
-	// Username represents the database username.
-	Username string `json:"username"`
-}
-
 // New creates an instance of a MongoDB Connection with the provided connection information.
 func New(c Config) (*Operator, error) {
-	// TODO: implement a config sanitizer/validator
-	if c.URI == "" {
-		return nil, ErrEmptyConnURI
+	if err := c.sanitizeAndValidate(); err != nil {
+		return nil, fmt.Errorf("config failed validation; %w", err)
 	}
 
 	// TODO: Configure additional auth mechanisms; current default is SCRAM
@@ -71,10 +45,6 @@ func New(c Config) (*Operator, error) {
 	)
 	if err != nil {
 		return nil, fmt.Errorf("%s, %w", ErrInitClient.Error(), err)
-	}
-
-	if c.TimeoutMS <= 0 {
-		c.TimeoutMS = _defaultTimeoutMS
 	}
 
 	ctx, done := context.WithTimeout(context.TODO(), time.Duration(c.TimeoutMS)*time.Millisecond)
