@@ -47,7 +47,7 @@ func New(c Config) (*Operator, error) {
 		return nil, fmt.Errorf("%s, %w", ErrInitClient.Error(), err)
 	}
 
-	ctx, done := context.WithTimeout(context.TODO(), time.Duration(c.TimeoutMS)*time.Millisecond)
+	ctx, done := context.WithTimeout(context.Background(), time.Duration(c.TimeoutMS)*time.Millisecond)
 	defer done()
 
 	if err := client.Connect(ctx); err != nil {

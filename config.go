@@ -19,7 +19,7 @@ type Config struct {
 	Password string `json:"password"`
 
 	// TimeoutMS represents a contextual timeout for operations in milliseconds.
-	TimeoutMS int64 `json:"timeout_ms"`
+	TimeoutMS int `json:"timeout_ms"`
 
 	// URI represents the database URI used to establish a connection.
 	URI string `json:"uri"`

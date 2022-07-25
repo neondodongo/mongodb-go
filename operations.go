@@ -25,7 +25,7 @@ func (op *Operator) Count(collection string, filter interface{}, opts ...*option
 		return -1, fmt.Errorf("%s, %w", ErrCount.Error(), err)
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(op.config.TimeoutMS)*time.Nanosecond)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(op.config.TimeoutMS)*time.Millisecond)
 
 	defer cancel()
 
@@ -50,7 +50,7 @@ func (op *Operator) DeleteMany(collection string, filter interface{}, opts ...*o
 		return -1, fmt.Errorf("%s; %w", ErrDeleteMany.Error(), err)
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(op.config.TimeoutMS)*time.Nanosecond)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(op.config.TimeoutMS)*time.Millisecond)
 
 	defer cancel()
 
@@ -79,7 +79,7 @@ func (op *Operator) DeleteOne(collection string, filter, target interface{}, opt
 		return fmt.Errorf("%s; %w", ErrDeleteOne.Error(), err)
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(op.config.TimeoutMS)*time.Nanosecond)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(op.config.TimeoutMS)*time.Millisecond)
 
 	defer cancel()
 
@@ -112,12 +112,16 @@ func (op *Operator) FindMany(collection string, filter, target interface{}, opts
 		return fmt.Errorf("%s, %w", ErrFindMany.Error(), err)
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(op.config.TimeoutMS)*time.Nanosecond)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(op.config.TimeoutMS)*time.Millisecond)
 
 	defer cancel()
 
 	cur, err := c.Find(ctx, filter, opts...)
 	if err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return nil
+		}
+
 		return fmt.Errorf("%s, %w", ErrFindMany.Error(), err)
 	}
 
@@ -145,11 +149,19 @@ func (op *Operator) FindOne(collection string, filter, target interface{}, opts 
 		return fmt.Errorf("%s, %w", ErrFindMany.Error(), err)
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(op.config.TimeoutMS)*time.Nanosecond)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(op.config.TimeoutMS)*time.Millisecond)
 
 	defer cancel()
 
 	res := c.FindOne(ctx, filter, opts...)
+
+	if err := res.Err(); err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return nil
+		}
+
+		return fmt.Errorf("%s failed to find document; %w", ErrFindOne.Error(), err)
+	}
 
 	if err := res.Decode(target); err != nil {
 		return fmt.Errorf("%s, failed to decode result to target; %w", ErrFindOne.Error(), err)
@@ -173,7 +185,7 @@ func (op *Operator) InsertMany(collection string, payload []interface{}, opts ..
 		return nil, fmt.Errorf("failed to get collection '%s'; %w", collection, err)
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(op.config.TimeoutMS)*time.Nanosecond)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(op.config.TimeoutMS)*time.Millisecond)
 	defer cancel()
 
 	res, err := c.InsertMany(ctx, payload, opts...)
@@ -195,7 +207,7 @@ func (op *Operator) InsertOne(collection string, payload interface{}, opts ...*o
 		return fmt.Errorf("%s, %w", ErrInsertOne.Error(), err)
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(op.config.TimeoutMS)*time.Nanosecond)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(op.config.TimeoutMS)*time.Millisecond)
 	defer cancel()
 
 	if _, err := c.InsertOne(ctx, payload, opts...); err != nil {
@@ -224,7 +236,7 @@ func (op *Operator) UpdateMany(collection string, filter, payload interface{}, o
 		return -1, fmt.Errorf("%s, %w", ErrUpdateMany.Error(), err)
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(op.config.TimeoutMS)*time.Nanosecond)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(op.config.TimeoutMS)*time.Millisecond)
 
 	defer cancel()
 
@@ -252,7 +264,7 @@ func (op *Operator) UpdateOne(collection string, filter, payload interface{}, op
 		return fmt.Errorf("%s, %w", ErrUpdateOne.Error(), err)
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(op.config.TimeoutMS)*time.Nanosecond)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(op.config.TimeoutMS)*time.Millisecond)
 
 	defer cancel()
 
