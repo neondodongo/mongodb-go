@@ -15,7 +15,7 @@ type Controller interface {
 	DeleteMany(collection string, filter interface{}, opts ...*options.DeleteOptions) (int64, error)
 	DeleteOne(collection string, filter, target interface{}, opts ...*options.FindOneAndDeleteOptions) error
 	FindMany(collection string, filter, target interface{}, opts ...*options.FindOptions) error
-	FindOne(colletion string, filter, target interface{}, opts ...*options.FindOneOptions) error
+	FindOne(collection string, filter, target interface{}, opts ...*options.FindOneOptions) error
 	InsertMany(collection string, payload []interface{}, opts ...*options.InsertManyOptions) ([]interface{}, error)
 	InsertOne(collection string, payload interface{}, opts ...*options.InsertOneOptions) error
 	UpdateMany(collection string, filter, payload interface{}, opts ...*options.UpdateOptions) (int64, error)

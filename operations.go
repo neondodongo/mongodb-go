@@ -118,10 +118,6 @@ func (op *Operator) FindMany(collection string, filter, target interface{}, opts
 
 	cur, err := c.Find(ctx, filter, opts...)
 	if err != nil {
-		if errors.Is(err, mongo.ErrNoDocuments) {
-			return nil
-		}
-
 		return fmt.Errorf("%s, %w", ErrFindMany.Error(), err)
 	}
 
@@ -146,7 +142,7 @@ func (op *Operator) FindOne(collection string, filter, target interface{}, opts 
 
 	c, err := op.getCollection(collection)
 	if err != nil {
-		return fmt.Errorf("%s, %w", ErrFindMany.Error(), err)
+		return fmt.Errorf("%s, %w", ErrFindOne.Error(), err)
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(op.config.TimeoutMS)*time.Millisecond)
@@ -156,10 +152,6 @@ func (op *Operator) FindOne(collection string, filter, target interface{}, opts 
 	res := c.FindOne(ctx, filter, opts...)
 
 	if err := res.Err(); err != nil {
-		if errors.Is(err, mongo.ErrNoDocuments) {
-			return nil
-		}
-
 		return fmt.Errorf("%s failed to find document; %w", ErrFindOne.Error(), err)
 	}
 
